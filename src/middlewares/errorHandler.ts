@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
+import logger from "../config/logger";
 
 // Define error-handling middleware with correct return type (void)
 export const errorHandler = (
@@ -14,6 +15,7 @@ export const errorHandler = (
   if (err instanceof ZodError) {
     statusCode = 400;
     message = "Validation error";
+    logger.warn(`Validation error: ${JSON.stringify(err.errors)}`);
     res.status(statusCode).json({ error: err.errors });
     return; // ✅ Explicitly return void
   }
@@ -21,7 +23,8 @@ export const errorHandler = (
   if (err instanceof Error) {
     message = err.message;
   }
-
+  
+  logger.error(`[${req.method}] ${req.url} - ${message}`);
   res.status(statusCode).json({ error: message });
   return; // ✅ Explicitly return void
 };

@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 import { errorHandler } from "./middlewares/errorHandler";
 import routes from "./routes";
 import { setupSwagger } from "./doc/swagger";
+import logger from "./config/logger";
 
 const app = express();
 
@@ -16,7 +17,14 @@ app.use(cors());
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan("dev"));
+// 📌 Setup Morgan for HTTP Logging
+app.use(
+  morgan("combined", {
+    stream: {
+      write: (message: string) => logger.info(message.trim()),
+    },
+  })
+);
 
 // Rate Limiting
 const limiter = rateLimit({
